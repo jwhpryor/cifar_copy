@@ -72,8 +72,9 @@ def preproc(output_proto_filename, img_filenames, label_dic):
                     writer.write(serialized)
 
 
-            except tf.errors.OutOfRangeError:
+            except tf.errors.OutOfRangeError as e:
                 print('Done training -- epoch limit reached')
+                print('(Error: ' + e.tostring())
             finally:
                 coord.request_stop()
 

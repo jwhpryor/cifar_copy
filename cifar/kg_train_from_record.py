@@ -13,11 +13,11 @@ import os
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_integer('batch_size', 5,
+tf.app.flags.DEFINE_integer('batch_size', 30,
                             """Size of training batches.""")
-tf.app.flags.DEFINE_integer('max_steps', 10,
+tf.app.flags.DEFINE_integer('max_steps', 1000,
                             """Number of steps for training.""")
-tf.app.flags.DEFINE_boolean('plot_imgs', False,
+tf.app.flags.DEFINE_boolean('plot_imgs', True,
                             """Whether to plot images.""")
 tf.app.flags.DEFINE_string('log_dir', 'logs',
                             """Where to emit logs for tensorboard.""")
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
             for step in xrange(FLAGS.max_steps):
                 start_time = time.time()
-                _, loss_value = sess.run([train_op, loss])
+                _, loss_value, imgs_s, labels_s = sess.run([train_op, loss, images, labels])
                 duration = time.time() - start_time
 
                 assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
@@ -87,6 +87,9 @@ if __name__ == '__main__':
                     print (format_str % (datetime.now(), step, loss_value,
                                          examples_per_sec, sec_per_batch))
 
+                if FLAGS.plot_imgs:
+                    kg_plotter.plot_batch(imgs_s, labels_s)
+
                 if step % 100 == 0:
                     summary_str = sess.run(summary_op)
                     summary_writer.add_summary(summary_str, step)
@@ -95,11 +98,3 @@ if __name__ == '__main__':
                 if step % 1000 == 0 or (step + 1) == FLAGS.max_steps:
                     checkpoint_path = os.path.join(FLAGS.log_dir, 'model.ckpt')
                     saver.save(sess, checkpoint_path, global_step=step)
-
-
-            for i in range(0,20):
-                if FLAGS.plot_imgs:
-                    l, c = sess.run([labels, images])
-                    for i in range(0, len(l)):
-                        print('Label: ' + str(l[i]))
-                        kg_plotter.plot(c[i])

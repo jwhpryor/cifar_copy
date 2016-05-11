@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2ae3fa41-53d4-4faa-9075-b77a7af08f28" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/runConfigurations/Preproc.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/runConfigurations/Train.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/imgs/train/c0/out" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/ml.iml" afterPath="$PROJECT_DIR$/.idea/ml.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cifar/kg.py" afterPath="$PROJECT_DIR$/cifar/kg.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cifar/kg_plotter.py" afterPath="$PROJECT_DIR$/cifar/kg_plotter.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cifar/kg_preproc.py" afterPath="$PROJECT_DIR$/cifar/kg_preproc.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cifar/kg_train_from_record.py" afterPath="$PROJECT_DIR$/cifar/kg_train_from_record.py" />
     </list>
@@ -25,7 +19,7 @@
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/ml$Preproc.coverage" NAME="Preproc Coverage Results" MODIFIED="1463004544144" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ml$Train.coverage" NAME="Train Coverage Results" MODIFIED="1463004023475" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/" />
+    <SUITE FILE_PATH="coverage/ml$Train.coverage" NAME="Train Coverage Results" MODIFIED="1463008471615" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -38,8 +32,8 @@
             <file leaf-file-name="kg.py" pinned="false" current-in-tab="true">
               <entry file="file://$PROJECT_DIR$/cifar/kg.py">
                 <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="270">
-                    <caret line="18" column="0" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+                  <state relative-caret-position="-435">
+                    <caret line="14" column="21" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
                     <folding>
                       <element signature="e#0#23#0" expanded="true" />
                     </folding>
@@ -58,8 +52,8 @@
             <file leaf-file-name="cifar10_train.py" pinned="false" current-in-tab="true">
               <entry file="file://$PROJECT_DIR$/cifar/cifar10_train.py">
                 <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="465">
-                    <caret line="98" column="0" selection-start-line="98" selection-start-column="0" selection-end-line="98" selection-end-column="0" />
+                  <state relative-caret-position="-111">
+                    <caret line="62" column="30" selection-start-line="62" selection-start-column="30" selection-end-line="62" selection-end-column="30" />
                     <folding>
                       <element signature="e#1313#1351#0" expanded="true" />
                     </folding>
@@ -101,8 +95,8 @@
       <file leaf-file-name="kg_preproc.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/cifar/kg_preproc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-125">
-              <caret line="46" column="31" selection-start-line="46" selection-start-column="31" selection-end-line="46" selection-end-column="31" />
+            <state relative-caret-position="925">
+              <caret line="62" column="41" selection-start-line="62" selection-start-column="41" selection-end-line="62" selection-end-column="41" />
               <folding>
                 <element signature="e#0#38#0" expanded="true" />
               </folding>
@@ -110,11 +104,21 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="cifar10_multi_gpu_train.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/cifar/cifar10_multi_gpu_train.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="195">
+              <caret line="122" column="19" selection-start-line="122" selection-start-column="19" selection-end-line="122" selection-end-column="19" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="kg_train_from_record.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/cifar/kg_train_from_record.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="520">
-              <caret line="101" column="48" selection-start-line="101" selection-start-column="48" selection-end-line="101" selection-end-column="48" />
+            <state relative-caret-position="550">
+              <caret line="99" column="20" selection-start-line="99" selection-start-column="20" selection-end-line="99" selection-end-column="20" />
               <folding>
                 <element signature="e#0#38#0" expanded="true" />
               </folding>
@@ -125,9 +129,11 @@
       <file leaf-file-name="kg_plotter.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/cifar/kg_plotter.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="150">
+              <caret line="10" column="15" selection-start-line="10" selection-start-column="15" selection-end-line="10" selection-end-column="15" />
+              <folding>
+                <element signature="e#0#31#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -148,11 +154,11 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/cifar/kg_train.py" />
-        <option value="$PROJECT_DIR$/cifar/kg_plotter.py" />
         <option value="$PROJECT_DIR$/cifar/cifar10_train.py" />
-        <option value="$PROJECT_DIR$/cifar/kg_train_from_record.py" />
         <option value="$PROJECT_DIR$/cifar/kg.py" />
         <option value="$PROJECT_DIR$/cifar/kg_preproc.py" />
+        <option value="$PROJECT_DIR$/cifar/kg_plotter.py" />
+        <option value="$PROJECT_DIR$/cifar/kg_train_from_record.py" />
       </list>
     </option>
   </component>
@@ -257,7 +263,7 @@
     <property name="restartRequiresConfirmation" value="false" />
     <property name="SearchEverywhereHistoryKey" value="cifar_&#9;null&#9;null&#10;kg.py&#9;FILE&#9;file:///Users/jwhpryor/ml/cifar/kg_preproc.py&#10;kg.&#9;FILE&#9;file:///Users/jamiesonpryor/ml/cifar/kg.py" />
   </component>
-  <component name="RunManager" selected="Python.Preproc">
+  <component name="RunManager" selected="Python.Train">
     <configuration default="true" type="DjangoTestsConfigurationType" factoryName="Django tests">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -563,23 +569,8 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/cifar/kg_preproc.py</url>
-          <line>85</line>
-          <option name="timeStamp" value="68" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/cifar/kg_train_from_record.py</url>
-          <line>99</line>
-          <option name="timeStamp" value="71" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/cifar/kg_train_from_record.py</url>
           <line>86</line>
-          <option name="timeStamp" value="74" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/cifar/kg_train_from_record.py</url>
-          <line>73</line>
-          <option name="timeStamp" value="76" />
+          <option name="timeStamp" value="68" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -592,7 +583,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="77" />
+      <option name="time" value="80" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -621,7 +612,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
           <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -651,14 +644,6 @@
     <entry file="file://$USER_HOME$/virtualenvs/tensorflow/lib/python2.7/site-packages/google/protobuf/internal/type_checkers.py" />
     <entry file="file://$USER_HOME$/virtualenvs/tensorflow/lib/python2.7/site-packages/tensorflow/python/ops/op_def_library.py" />
     <entry file="file://$USER_HOME$/virtualenvs/tensorflow/lib/python2.7/site-packages/matplotlib/image.py" />
-    <entry file="file://$PROJECT_DIR$/cifar/kg_plotter.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/virtualenvs/tensorflow/lib/python2.7/site-packages/tensorflow/python/client/session.py" />
     <entry file="file://$PROJECT_DIR$/cifar/kg_train.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -700,20 +685,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/cifar/cifar10_train.py">
+    <entry file="file://$PROJECT_DIR$/cifar/cifar10_multi_gpu_train.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="465">
-          <caret line="98" column="0" selection-start-line="98" selection-start-column="0" selection-end-line="98" selection-end-column="0" />
-          <folding>
-            <element signature="e#1313#1351#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="195">
+          <caret line="122" column="19" selection-start-line="122" selection-start-column="19" selection-end-line="122" selection-end-column="19" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/cifar/kg.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="18" column="0" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+        <state relative-caret-position="-435">
+          <caret line="14" column="21" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>
@@ -722,18 +705,38 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/cifar/kg_preproc.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-125">
-          <caret line="46" column="31" selection-start-line="46" selection-start-column="31" selection-end-line="46" selection-end-column="31" />
+        <state relative-caret-position="925">
+          <caret line="62" column="41" selection-start-line="62" selection-start-column="41" selection-end-line="62" selection-end-column="41" />
           <folding>
             <element signature="e#0#38#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/cifar/cifar10_train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-111">
+          <caret line="62" column="30" selection-start-line="62" selection-start-column="30" selection-end-line="62" selection-end-column="30" />
+          <folding>
+            <element signature="e#1313#1351#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cifar/kg_plotter.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" column="15" selection-start-line="10" selection-start-column="15" selection-end-line="10" selection-end-column="15" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/cifar/kg_train_from_record.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="520">
-          <caret line="101" column="48" selection-start-line="101" selection-start-column="48" selection-end-line="101" selection-end-column="48" />
+        <state relative-caret-position="550">
+          <caret line="99" column="20" selection-start-line="99" selection-start-column="20" selection-end-line="99" selection-end-column="20" />
           <folding>
             <element signature="e#0#38#0" expanded="true" />
           </folding>
