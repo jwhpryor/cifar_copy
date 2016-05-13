@@ -21,6 +21,8 @@ tf.app.flags.DEFINE_boolean('plot_imgs', False,
                             """Whether to plot images.""")
 tf.app.flags.DEFINE_string('log_dir', 'logs',
                             """Where to emit logs for tensorboard.""")
+tf.app.flags.DEFINE_string('model_checkpoint', 'logs/model.ckpt-90',
+                           """Where to emit logs for tensorboard.""")
 
 def img_label_pairs(filename_queue):
     reader = tf.TFRecordReader()
@@ -67,12 +69,17 @@ if __name__ == '__main__':
             sess.run(init_op)
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
+            if tf.gfile.Exists(FLAGS.model_checkpoint):
+                saver.restore(sess, FLAGS.model_checkpoint)
+
             summary_writer = tf.train.SummaryWriter(FLAGS.log_dir, sess.graph)
 
             for step in xrange(FLAGS.max_steps):
                 start_time = time.time()
-                #_, loss_value, imgs_s, labels_s = sess.run([train_op, loss, images, labels])   use for plotting
-                _, loss_value = sess.run([train_op, loss])
+                if FLAGS.plot_imgs:
+                    _, loss_value, imgs_s, labels_s = sess.run([train_op, loss, images, labels])
+                else:
+                    _, loss_value = sess.run([train_op, loss])
                 duration = time.time() - start_time
 
                 assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
@@ -96,6 +103,7 @@ if __name__ == '__main__':
                     summary_writer.add_summary(summary_str, step)
 
                 # Save the model checkpoint periodically.
-                if step % 1 == 0 or (step + 1) == FLAGS.max_steps:
-                    checkpoint_path = os.path.join(FLAGS.log_dir, 'model.ckpt')
+                if step % 10 == 0 or (step + 1) == FLAGS.max_steps:
+                    print('Saving checkpoint...')
+                    checkpoint_path = FLAGS.model_checkpoint
                     saver.save(sess, checkpoint_path, global_step=step)

@@ -41,6 +41,7 @@ def preproc(output_proto_filename, img_filenames, label_dic):
             reader = tf.WholeFileReader()
             filename_queue = tf.train.string_input_producer(img_filenames, num_epochs=1)
 
+
             # Start populating the filename queue.
             coord = tf.train.Coordinator()
             init_op = tf.initialize_all_variables()
