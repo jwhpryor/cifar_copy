@@ -8,12 +8,14 @@ import os.path
 import tensorflow as tf
 import numpy as np
 
+import kg_plotter
+
 FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_string('train_dir', 'data/imgs/train',
                            """Images train dir""")
-tf.app.flags.DEFINE_boolean('plot_imgs', True,
-                            """Whether to plot images.""")
+tf.app.flags.DEFINE_integer('batch_size', 128,
+                            """Size per proto batch.""")
 
 def get_image_filenames_and_labels(parent_dir):
     path = os.path.join(os.getcwd(), FLAGS.train_dir)
@@ -31,9 +33,9 @@ def get_image_filenames_and_labels(parent_dir):
             labels[filename] = i
     return imgs, labels
 
-def preproc(output_proto_filename, img_filenames, label_dic):
+def preproc(proto_dir, img_filenames, label_dic):
     np.random.shuffle(img_filenames)
-    img_filenames = img_filenames[0:kg.TOTAL_SAMPLES]
+    total_samples = len(img_filenames)
 
     with tf.Graph().as_default():
         with tf.Session() as sess:
@@ -47,18 +49,24 @@ def preproc(output_proto_filename, img_filenames, label_dic):
             init_op = tf.initialize_all_variables()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
             sess.run(init_op)
-            writer = tf.python_io.TFRecordWriter(output_proto_filename)
 
             key, img_raw = reader.read(filename_queue)
             img = tf.image.decode_jpeg(img_raw, channels=kg.CHANNELS, ratio=kg.DOWNSAMPLE)
+            #img = tf.reshape(img, [kg.IMG_HEIGHT, kg.IMG_WIDTH, kg.CHANNELS])
+            #img = tf.image.per_image_whitening(img)
 
             i = 0
             try:
                 while not coord.should_stop():
+                    if i % FLAGS.batch_size == 0:
+                        filename = 'img_' + str(i) + '-' + str(i+FLAGS.batch_size) + '.kg_record'
+                        output_proto_filename = os.path.join(os.getcwd(), os.path.join(proto_dir, filename))
+                    writer = tf.python_io.TFRecordWriter(output_proto_filename)
+
                     filename, img_vals = sess.run([key, img])
                     label = label_dic[filename]
 
-                    print('[' + str(i) + ' of ' + str(kg.TOTAL_SAMPLES) + '] Processing ' + filename + '...')
+                    print('[' + str(i) + ' of ' + str(total_samples) + '] Processing ' + filename + '...')
                     i = i +1
 
                     example = tf.train.Example(
@@ -70,12 +78,11 @@ def preproc(output_proto_filename, img_filenames, label_dic):
                                     bytes_list=tf.train.BytesList(value=img_vals.tostring()))
                             }))
                     serialized = example.SerializeToString()
+                    kg_plotter.plot(img_vals)
                     writer.write(serialized)
-
 
             except tf.errors.OutOfRangeError as e:
                 print('Done training -- epoch limit reached')
-                print('(Error: ' + e.tostring())
             finally:
                 coord.request_stop()
 

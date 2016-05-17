@@ -12,19 +12,19 @@ INITIAL_LEARNING_RATE = 0.15       # Initial learning rate.
 
 # Constants describing the knowledge domain
 NUM_CLASSES = 10
-TOTAL_SAMPLES = 90000
 
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = TOTAL_SAMPLES * 0.9
-NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = TOTAL_SAMPLES * 0.1
+#NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = TOTAL_SAMPLES * 0.9
+#NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = TOTAL_SAMPLES * 0.1
 
 CHANNELS = 1
 DOWNSAMPLE = 4
+BYTES_PER_ELEMENT = 4       # 1 for char 4 for float
 IMG_WIDTH = 640 / DOWNSAMPLE
 IMG_HEIGHT = 480 / DOWNSAMPLE
-IMG_BYTES = CHANNELS * (IMG_WIDTH * IMG_HEIGHT)
+IMG_BYTES = CHANNELS * (IMG_WIDTH * IMG_HEIGHT) * BYTES_PER_ELEMENT
 
-TRAIN_PROTO_FILE = 'proto/kg_train.tfrecords'
-EVAL_PROTO_FILE = 'proto/kg_eval.tfrecords'
+TRAIN_PROTO_FILE = 'proto/train/'
+EVAL_PROTO_FILE = 'proto/eval/'
 
 # If a model is trained with multiple GPUs, prefix all Op names with tower_name
 # to differentiate the operations. Note that this prefix is removed from the
@@ -216,7 +216,7 @@ def _add_loss_summaries(total_loss):
     return loss_averages_op
 
 
-def train(total_loss, global_step):
+def train(num_examples, total_loss, global_step):
     """Train CIFAR-10 model.
 
     Create an optimizer and apply to all trainable variables. Add moving
@@ -230,7 +230,7 @@ def train(total_loss, global_step):
       train_op: op for training.
     """
     # Variables that affect learning rate.
-    num_batches_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / FLAGS.batch_size
+    num_batches_per_epoch = num_examples / FLAGS.batch_size
     decay_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
 
     # Decay the learning rate exponentially based on the number of steps.
