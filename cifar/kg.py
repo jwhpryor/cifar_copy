@@ -17,6 +17,8 @@ TOTAL_SAMPLES = 22424
 NUM_TRAIN_SAMPLES = int((TOTAL_SAMPLES - TOTAL_SAMPLES % BATCH_SIZE)*(1.0 - HOLDOUT))
 NUM_EVAL_SAMPLES = TOTAL_SAMPLES - NUM_TRAIN_SAMPLES
 
+NUM_EPOCHS = 500000
+
 CHANNELS = 1
 DOWNSAMPLE = 4
 IMG_WIDTH = 640 / DOWNSAMPLE
@@ -38,7 +40,8 @@ class DriverRecord:
         self.class_id = class_id
 
 def img_label_pairs(filename_queue, eval=False):
-    reader = tf.TFRecordReader(name="record_reader")
+    print('Filling image queue...  (this make take a second).')
+    reader = tf.TFRecordReader()
     _, serialized_example = reader.read(filename_queue)
     features = tf.parse_single_example(
         serialized_example,
@@ -49,15 +52,26 @@ def img_label_pairs(filename_queue, eval=False):
 
     label = features['label']
     image = tf.decode_raw(features['image'], tf.uint8)
+    image = tf.cast(image, tf.float32)
     image = tf.reshape(image, [IMG_HEIGHT, IMG_WIDTH, CHANNELS])
-    image = tf.to_float(image)
+
+    if not eval:
+        print('(applying random distortions for training set...)')
+        image = tf.random_crop(image, [IMG_HEIGHT, IMG_WIDTH, CHANNELS])
+        image = tf.image.random_flip_left_right(image)
+        image = tf.image.random_brightness(image, max_delta=63)
+        image = tf.image.random_contrast(image, lower=0.2, upper=1.8)
+
+        # TODO: random rotation would help too?
 
     # the shuffling is done in preprocessing
-    image_batch, labels_batch = tf.train.batch(
+    image = tf.image.per_image_whitening(image)
+    image_batch, labels_batch = tf.train.shuffle_batch(
         [image, label],
         batch_size=BATCH_SIZE,
         num_threads=8,
-        name="train_batch")
+        capacity=50000,
+        min_after_dequeue=10)
 
     return labels_batch, image_batch, label
 

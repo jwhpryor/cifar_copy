@@ -15,13 +15,13 @@ FLAGS = tf.app.flags.FLAGS
 
 #tf.app.flags.DEFINE_integer('batch_size', 128,
 #                            """Size of training batches.""")
-tf.app.flags.DEFINE_integer('max_steps', 90000,
+tf.app.flags.DEFINE_integer('max_steps', 500000,
                             """Number of steps for training.""")
 tf.app.flags.DEFINE_boolean('plot_imgs', False,
                             """Whether to plot images.""")
 tf.app.flags.DEFINE_string('log_dir', 'logs',
                             """Where to emit logs for tensorboard.""")
-tf.app.flags.DEFINE_string('model_checkpoint', 'logs/model.ckpt-480',
+tf.app.flags.DEFINE_string('model_checkpoint', 'logs/model.ckpt',
                            """Where to emit logs for tensorboard.""")
 
 def get_step_from_filename(filename):
@@ -39,6 +39,7 @@ if __name__ == '__main__':
 
             train_filename_queue = tf.train.string_input_producer([kg.TRAIN_PROTO_FILE], shuffle=False,
                                                                   name='filename_queue')
+
             labels, images, label = kg.img_label_pairs(train_filename_queue)
 
             logits = kg.inference(images)
@@ -46,6 +47,7 @@ if __name__ == '__main__':
             train_op = kg.train(loss, global_step)
 
             summary_op = tf.merge_all_summaries()
+            saver = tf.train.Saver(tf.all_variables())
 
             coord = tf.train.Coordinator()
             init_op = tf.initialize_all_variables()
@@ -54,7 +56,6 @@ if __name__ == '__main__':
 
             summary_writer = tf.train.SummaryWriter(FLAGS.log_dir, sess.graph)
 
-            saver = tf.train.Saver(tf.all_variables())
             if tf.gfile.Exists(FLAGS.model_checkpoint):
                 saver.restore(sess, FLAGS.model_checkpoint)
                 starting_step = global_step.eval()
@@ -62,12 +63,6 @@ if __name__ == '__main__':
             else:
                 print('No checkpoint found, starting fresh.')
                 starting_step = 0
-
-            # make sure the filename queue resumes from where we ended it
-            # note that all of the randomization is done in pre-processing.
-            # TODO:  there must be a way to do this properly
-            for step in xrange(starting_step):
-                _, _ = sess.run([labels, images])
 
             for step in xrange(starting_step, FLAGS.max_steps):
                 start_time = time.time()

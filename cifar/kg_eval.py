@@ -11,6 +11,7 @@ import numpy as np
 import tensorflow as tf
 
 import kg
+import kg_plotter
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -18,7 +19,7 @@ tf.app.flags.DEFINE_string('eval_dir', 'logs/eval',
                            """Directory where to write event logs.""")
 tf.app.flags.DEFINE_string('checkpoint_dir', 'logs',
                            """Directory where to read model checkpoints.""")
-tf.app.flags.DEFINE_integer('eval_interval_secs', 60,
+tf.app.flags.DEFINE_integer('eval_interval_secs', 108000,
                             """How often to run the eval.""")
 tf.app.flags.DEFINE_integer('num_examples', kg.NUM_EVAL_SAMPLES,
                             """Number of examples to run.""")
@@ -38,6 +39,7 @@ def eval_once(saver, summary_writer, top_k_op, summary_op, images, labels, logit
         checkpoint_dir = os.path.join(os.getcwd(), FLAGS.checkpoint_dir)
         ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
         if ckpt and ckpt.model_checkpoint_path:
+            print('Found checkpoint...')
             # Restores from checkpoint
             saver.restore(sess, os.path.join(checkpoint_dir, ckpt.model_checkpoint_path))
             # Assuming model_checkpoint_path looks something like:
@@ -57,13 +59,16 @@ def eval_once(saver, summary_writer, top_k_op, summary_op, images, labels, logit
                                                  start=True))
 
             num_iter = int(math.ceil(FLAGS.num_examples / kg.BATCH_SIZE))
+            #num_iter = min(10, int(math.ceil(FLAGS.num_examples / kg.BATCH_SIZE)))
             true_count = 0  # Counts the number of correct predictions.
             total_sample_count = num_iter * kg.BATCH_SIZE
             step = 0
             while step < num_iter and not coord.should_stop():
-                if True:
+                if False:
                     predictions, imgs, labels, logits = sess.run([top_k_op, images, labels, logits])
+                    kg_plotter.plot_batch(imgs, None)
                 else:
+                    print('Evaluating... (step ' + str(step) + ' of ' + str(num_iter) + ')')
                     predictions = sess.run([top_k_op])
                 true_count += np.sum(predictions)
                 step += 1
