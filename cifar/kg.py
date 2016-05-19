@@ -1,7 +1,6 @@
 import tensorflow as tf
 import re
 
-
 FLAGS = tf.app.flags.FLAGS
 
 # Constants describing the training process.
@@ -12,10 +11,11 @@ INITIAL_LEARNING_RATE = 0.15       # Initial learning rate.
 
 # Constants describing the knowledge domain
 NUM_CLASSES = 10
-TOTAL_SAMPLES = 90000
-
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = TOTAL_SAMPLES * 0.9
-NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = TOTAL_SAMPLES * 0.1
+BATCH_SIZE = 128
+HOLDOUT = 0.1
+TOTAL_SAMPLES = 22424
+NUM_TRAIN_SAMPLES = int((TOTAL_SAMPLES - TOTAL_SAMPLES % BATCH_SIZE)*(1.0 - HOLDOUT))
+NUM_EVAL_SAMPLES = TOTAL_SAMPLES - NUM_TRAIN_SAMPLES
 
 CHANNELS = 1
 DOWNSAMPLE = 4
@@ -30,6 +30,36 @@ EVAL_PROTO_FILE = 'proto/kg_eval.tfrecords'
 # to differentiate the operations. Note that this prefix is removed from the
 # names of the summaries when visualizing a model.
 TOWER_NAME = 'tower'
+
+class DriverRecord:
+    def __init__(self, filename, driver_id, class_id):
+        self.filename = filename
+        self.driver_id = driver_id
+        self.class_id = class_id
+
+def img_label_pairs(filename_queue, eval=False):
+    reader = tf.TFRecordReader(name="record_reader")
+    _, serialized_example = reader.read(filename_queue)
+    features = tf.parse_single_example(
+        serialized_example,
+        features={
+            'label': tf.FixedLenFeature([], tf.int64),
+            'image': tf.FixedLenFeature(IMG_BYTES, tf.string)
+        })
+
+    label = features['label']
+    image = tf.decode_raw(features['image'], tf.uint8)
+    image = tf.reshape(image, [IMG_HEIGHT, IMG_WIDTH, CHANNELS])
+    image = tf.to_float(image)
+
+    # the shuffling is done in preprocessing
+    image_batch, labels_batch = tf.train.batch(
+        [image, label],
+        batch_size=BATCH_SIZE,
+        num_threads=8,
+        name="train_batch")
+
+    return labels_batch, image_batch, label
 
 def _variable_on_cpu(name, shape, initializer):
     """Helper to create a Variable stored on CPU memory.
@@ -138,7 +168,7 @@ def inference(images):
     # local3
     with tf.variable_scope('local3') as scope:
         # Move everything into depth so we can perform a single matrix multiply.
-        reshape = tf.reshape(pool2, [FLAGS.batch_size, -1])
+        reshape = tf.reshape(pool2, [BATCH_SIZE, -1])
         dim = reshape.get_shape()[1].value
         weights = _variable_with_weight_decay('weights', shape=[dim, 384],
                                               stddev=0.04, wd=0.004)
@@ -230,7 +260,7 @@ def train(total_loss, global_step):
       train_op: op for training.
     """
     # Variables that affect learning rate.
-    num_batches_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / FLAGS.batch_size
+    num_batches_per_epoch = NUM_TRAIN_SAMPLES / BATCH_SIZE
     decay_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
 
     # Decay the learning rate exponentially based on the number of steps.

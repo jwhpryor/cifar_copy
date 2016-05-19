@@ -13,40 +13,16 @@ import os
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_integer('batch_size', 128,
-                            """Size of training batches.""")
+#tf.app.flags.DEFINE_integer('batch_size', 128,
+#                            """Size of training batches.""")
 tf.app.flags.DEFINE_integer('max_steps', 90000,
                             """Number of steps for training.""")
 tf.app.flags.DEFINE_boolean('plot_imgs', False,
                             """Whether to plot images.""")
 tf.app.flags.DEFINE_string('log_dir', 'logs',
                             """Where to emit logs for tensorboard.""")
-tf.app.flags.DEFINE_string('model_checkpoint', 'logs/model.ckpt',
+tf.app.flags.DEFINE_string('model_checkpoint', 'logs/model.ckpt-480',
                            """Where to emit logs for tensorboard.""")
-
-def img_label_pairs(filename_queue):
-    reader = tf.TFRecordReader(name="record_reader")
-    _, serialized_example = reader.read(filename_queue)
-    features = tf.parse_single_example(
-        serialized_example,
-        features={
-            'label': tf.FixedLenFeature([], tf.int64),
-            'image': tf.FixedLenFeature(kg.IMG_BYTES, tf.string)
-        })
-
-    label = features['label']
-    image = tf.decode_raw(features['image'], tf.uint8)
-    image = tf.reshape(image, [kg.IMG_HEIGHT, kg.IMG_WIDTH, kg.CHANNELS])
-    image = tf.to_float(image)
-
-    # the shuffling is done in preprocessing
-    image_batch, labels_batch = tf.train.batch(
-        [image, label],
-        batch_size=FLAGS.batch_size,
-        num_threads=1,
-        name="train_batch")
-
-    return labels_batch, image_batch
 
 def get_step_from_filename(filename):
     try:
@@ -63,7 +39,7 @@ if __name__ == '__main__':
 
             train_filename_queue = tf.train.string_input_producer([kg.TRAIN_PROTO_FILE], shuffle=False,
                                                                   name='filename_queue')
-            labels, images = img_label_pairs(train_filename_queue)
+            labels, images, label = kg.img_label_pairs(train_filename_queue)
 
             logits = kg.inference(images)
             loss = kg.loss(logits, labels)
@@ -106,7 +82,7 @@ if __name__ == '__main__':
 
                 #if step % 10 == 0:
                 if True:
-                    num_examples_per_step = FLAGS.batch_size
+                    num_examples_per_step = kg.BATCH_SIZE
                     examples_per_sec = num_examples_per_step / duration
                     sec_per_batch = float(duration)
 
