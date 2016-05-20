@@ -75,6 +75,22 @@ def img_label_pairs(filename_queue, eval=False):
 
     return labels_batch, image_batch, label
 
+def img_from_jpeg(filename_queue):
+    print('Filling image queue...  (this make take a second).')
+    reader = tf.WholeFileReader()
+    filename, img_raw = reader.read(filename_queue)
+    img = tf.image.decode_jpeg(img_raw, channels=CHANNELS, ratio=DOWNSAMPLE)
+    img = tf.cast(img, tf.float32)
+    img = tf.reshape(img, [IMG_HEIGHT, IMG_WIDTH, CHANNELS])
+    img = tf.image.per_image_whitening(img)
+
+    image_batch = tf.train.batch(
+        [img],
+        batch_size=1,
+        num_threads=1)
+
+    return image_batch
+
 def _variable_on_cpu(name, shape, initializer):
     """Helper to create a Variable stored on CPU memory.
 
@@ -131,7 +147,7 @@ def _activation_summary(x):
     tf.scalar_summary(tensor_name + '/sparsity', tf.nn.zero_fraction(x))
 
 
-def inference(images):
+def inference(images, batch_size=BATCH_SIZE):
     """Build the CIFAR-10 model.
 
     Args:
@@ -182,7 +198,7 @@ def inference(images):
     # local3
     with tf.variable_scope('local3') as scope:
         # Move everything into depth so we can perform a single matrix multiply.
-        reshape = tf.reshape(pool2, [BATCH_SIZE, -1])
+        reshape = tf.reshape(pool2, [batch_size, -1])
         dim = reshape.get_shape()[1].value
         weights = _variable_with_weight_decay('weights', shape=[dim, 384],
                                               stddev=0.04, wd=0.004)

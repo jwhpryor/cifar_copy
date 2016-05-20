@@ -21,7 +21,7 @@ tf.app.flags.DEFINE_boolean('plot_imgs', False,
                             """Whether to plot images.""")
 tf.app.flags.DEFINE_string('log_dir', 'logs',
                             """Where to emit logs for tensorboard.""")
-tf.app.flags.DEFINE_string('model_checkpoint', 'logs/model.ckpt',
+tf.app.flags.DEFINE_string('model_checkpoint', 'logs/model.ckpt-2000',
                            """Where to emit logs for tensorboard.""")
 
 def get_step_from_filename(filename):
