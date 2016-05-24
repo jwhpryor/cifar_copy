@@ -89,7 +89,7 @@ def img_from_jpeg(filename_queue):
         batch_size=1,
         num_threads=1)
 
-    return image_batch
+    return image_batch, filename, img
 
 def _variable_on_cpu(name, shape, initializer):
     """Helper to create a Variable stored on CPU memory.
