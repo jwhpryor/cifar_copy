@@ -12,39 +12,30 @@ import tensorflow as tf
 
 import kg
 import kg_plotter
+import kg_data
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('eval_dir', 'logs/eval',
+tf.app.flags.DEFINE_string('eval_logs_dir', 'logs/eval',
                            """Directory where to write event logs.""")
 tf.app.flags.DEFINE_string('checkpoint_dir', 'logs',
                            """Directory where to read model checkpoints.""")
+tf.app.flags.DEFINE_integer('batch_size', kg.BATCH_SIZE,
+                            """Size of batch to process with.""")
 tf.app.flags.DEFINE_integer('eval_interval_secs', 108000,
                             """How often to run the eval.""")
-tf.app.flags.DEFINE_integer('num_examples', kg.NUM_EVAL_SAMPLES,
-                            """Number of examples to run.""")
 tf.app.flags.DEFINE_boolean('run_once', False,
                             """Whether to run eval only once.""")
+tf.app.flags.DEFINE_boolean('plot_imgs', True,
+                           """Whether to plot the images as we evaluate.""")
 
-def eval_once(saver, summary_writer, top_k_op, summary_op, images, labels, logits ):
-    """Run Eval once.
-
-    Args:
-      saver: Saver.
-      summary_writer: Summary writer.
-      top_k_op: Top K op.
-      summary_op: Summary op.
-    """
+def eval_once(num_examples, saver, summary_writer, top_k_op, summary_op, images_t, labels_t, logits_t, filenames_t):
     with tf.Session() as sess:
         checkpoint_dir = os.path.join(os.getcwd(), FLAGS.checkpoint_dir)
         ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
         if ckpt and ckpt.model_checkpoint_path:
             print('Found checkpoint...')
-            # Restores from checkpoint
             saver.restore(sess, os.path.join(checkpoint_dir, ckpt.model_checkpoint_path))
-            # Assuming model_checkpoint_path looks something like:
-            #   /my-favorite-path/cifar10_train/model.ckpt-0,
-            # extract global_step from it.
             global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
         else:
             print('No checkpoint file found')
@@ -55,18 +46,18 @@ def eval_once(saver, summary_writer, top_k_op, summary_op, images, labels, logit
         try:
             threads = []
             for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
-                threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
-                                                 start=True))
+                threads.extend(qr.create_threads(sess, coord=coord, daemon=True, start=True))
 
-            num_iter = int(math.ceil(FLAGS.num_examples / kg.BATCH_SIZE))
-            #num_iter = min(10, int(math.ceil(FLAGS.num_examples / kg.BATCH_SIZE)))
-            true_count = 0  # Counts the number of correct predictions.
+            num_iter = int(math.ceil(num_examples / FLAGS.batch_size))
+            true_count = 0
             total_sample_count = num_iter * kg.BATCH_SIZE
             step = 0
             while step < num_iter and not coord.should_stop():
-                if False:
-                    predictions, imgs, labels, logits = sess.run([top_k_op, images, labels, logits])
-                    kg_plotter.plot_batch(imgs, None)
+                if FLAGS.plot_imgs:
+                    predictions, images, labels, logits, filenames = sess.run([top_k_op, images_t, labels_t, logits_t,
+                                                                            filenames_t])
+                    kg_plotter.plot_batch(images, predictions_batch=predictions, labels_batch=labels,
+                                          filenames=filenames)
                 else:
                     print('Evaluating... (step ' + str(step) + ' of ' + str(num_iter) + ')')
                     predictions = sess.run([top_k_op])
@@ -81,20 +72,80 @@ def eval_once(saver, summary_writer, top_k_op, summary_op, images, labels, logit
             summary.ParseFromString(sess.run(summary_op))
             summary.value.add(tag='Precision @ 1', simple_value=precision)
             summary_writer.add_summary(summary, global_step)
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:
             coord.request_stop(e)
 
         coord.request_stop()
         coord.join(threads, stop_grace_period_secs=10)
 
+def infer_once(num_examples, saver, filenames_t, top_k_op, images_t):
+    with tf.Session() as sess:
+        checkpoint_dir = os.path.join(os.getcwd(), FLAGS.checkpoint_dir)
+        ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
+        if ckpt and ckpt.model_checkpoint_path:
+            print('Found checkpoint...')
+            saver.restore(sess, os.path.join(checkpoint_dir, ckpt.model_checkpoint_path))
+        else:
+            print('No checkpoint file found')
+            return
+
+        # Start the queue runners.
+        coord = tf.train.Coordinator()
+        try:
+            threads = []
+            for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+                threads.extend(qr.create_threads(sess, coord=coord, daemon=True, start=True))
+
+            num_iter = int(math.ceil(num_examples / FLAGS.batch_size))
+            step = 0
+            while step < num_iter and not coord.should_stop():
+                if FLAGS.plot_imgs:
+                    filenames, predictions, imgs = sess.run([filenames_t, top_k_op, images_t])
+                    kg_plotter.plot_batch(imgs, filenames=filenames, predictions_batch=predictions)
+                else:
+                    print('Evaluating... (step ' + str(step) + ' of ' + str(num_iter) + ')')
+                    predictions = sess.run([top_k_op])
+                step += 1
+
+        except Exception as e:
+            coord.request_stop(e)
+
+        coord.request_stop()
+        coord.join(threads, stop_grace_period_secs=10)
+
+def infer_folder(folder):
+    filenames = [os.path.join(folder, x) for x in os.listdir(folder)]
+
+    with tf.Graph().as_default() as g:
+        infer_filename_queue = tf.train.string_input_producer(filenames, shuffle=False, name='infer_filename_queue')
+        num_examples = len(filenames)
+
+        images_t, filenames_t = kg.img_labels_from_jpeg(infer_filename_queue, batch_size=FLAGS.batch_size)
+        logits = kg.inference(images_t)
+        top_k_op = tf.nn.top_k(logits, 1)[1]
+
+        # Restore the moving average version of the learned variables for eval.
+        variable_averages = tf.train.ExponentialMovingAverage(kg.MOVING_AVERAGE_DECAY)
+        variables_to_restore = variable_averages.variables_to_restore()
+        saver = tf.train.Saver(variables_to_restore)
+
+        while True:
+            infer_once(num_examples, saver, filenames_t, top_k_op, images_t)
+            if FLAGS.run_once:
+                break
+            time.sleep(FLAGS.eval_interval_secs)
 
 def evaluate():
     with tf.Graph().as_default() as g:
-        eval_filename_queue = tf.train.string_input_producer([kg.EVAL_PROTO_FILE], shuffle=False,
-                                                              name='eval_filename_queue')
-        labels, images, _ = kg.img_label_pairs(eval_filename_queue, eval=True)
-        logits = kg.inference(images)
-        top_k_op = tf.nn.in_top_k(logits, labels, 1)
+        filenames, labels = kg_data.get_train_eval_and_label(eval=True)
+        eval_filename_queue = tf.train.string_input_producer(filenames, shuffle=False, name='eval_filename_queue')
+        eval_label_queue = tf.train.input_producer(labels, shuffle=False, name='eval_label_queue')
+        num_examples = len(filenames)
+
+        images_t, labels_t, filenames_t = kg.img_labels_from_jpeg(eval_filename_queue, eval_label_queue,
+                                                            batch_size=kg.BATCH_SIZE)
+        logits_t = kg.inference(images_t)
+        top_k_op = tf.nn.in_top_k(logits_t, labels_t, 1)
 
         # Restore the moving average version of the learned variables for eval.
         variable_averages = tf.train.ExponentialMovingAverage(kg.MOVING_AVERAGE_DECAY)
@@ -103,18 +154,22 @@ def evaluate():
 
         # Build the summary operation based on the TF collection of Summaries.
         summary_op = tf.merge_all_summaries()
-        summary_writer = tf.train.SummaryWriter(FLAGS.eval_dir, g)
+        summary_writer = tf.train.SummaryWriter(FLAGS.eval_logs_dir, g)
 
         while True:
-            eval_once(saver, summary_writer, top_k_op, summary_op, images, labels, logits)
+            eval_once(num_examples, saver, summary_writer, top_k_op, summary_op, images_t, labels_t, logits_t,
+                      filenames_t)
             if FLAGS.run_once:
                 break
             time.sleep(FLAGS.eval_interval_secs)
 
 def main(argv=None):
-    if tf.gfile.Exists(FLAGS.eval_dir):
-        tf.gfile.DeleteRecursively(FLAGS.eval_dir)
-    tf.gfile.MakeDirs(FLAGS.eval_dir)
+    if tf.gfile.Exists(FLAGS.eval_logs_dir):
+        tf.gfile.DeleteRecursively(FLAGS.eval_logs_dir)
+    tf.gfile.MakeDirs(FLAGS.eval_logs_dir)
+
+    #infer_folder('/Users/jwhpryor/ml/data/imgs/test')
+
     evaluate()
 
 if __name__ == '__main__':

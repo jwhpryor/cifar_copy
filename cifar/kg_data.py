@@ -9,16 +9,16 @@ import csv
 import tensorflow as tf
 import numpy as np
 
+np.random.seed(0xabcdef)
+
 FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_string('label_dictionary', 'data/imgs/driver_imgs_list.csv',
                            """Dictionary of all filenames and their respective class info""")
 tf.app.flags.DEFINE_string('train_dir', 'data/imgs/train',
                            """Images train dir""")
-tf.app.flags.DEFINE_string('eval_dir', 'data/imgs/test',
+tf.app.flags.DEFINE_string('eval_imgs_dir', 'data/imgs/test',
                            """Images train dir""")
-tf.app.flags.DEFINE_boolean('plot_imgs', False,
-                            """Whether to plot images.""")
 tf.app.flags.DEFINE_float('holdout', 0.1,
                           """Percent of samples to holdout.""")
 
@@ -38,6 +38,17 @@ def get_label_dic():
 
     return output_dic
 
+def get_train_eval_and_label(eval=False):
+    train_filenames, eval_filenames = get_train_eval_sets()
+    if eval:
+        filenames = eval_filenames
+    else:
+        filenames = train_filenames
+    label_dic = get_label_dic()
+    labels = [label_dic[os.path.basename(x)].class_id for x in filenames]
+
+    return filenames, labels
+
 # breaks apart set into train and eval holdout (accomodating batch_size)
 def get_train_eval_sets():
     path = os.path.join(os.getcwd(), FLAGS.train_dir)
@@ -54,4 +65,3 @@ def get_train_eval_sets():
     np.random.shuffle(filenames)
 
     return filenames[0:kg.NUM_TRAIN_SAMPLES], filenames[-kg.NUM_EVAL_SAMPLES:]
-

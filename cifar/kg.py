@@ -91,6 +91,28 @@ def img_from_jpeg(filename_queue):
 
     return image_batch, filename, img
 
+def img_labels_from_jpeg(filename_label_queue, label_queue=None, batch_size=1):
+    reader = tf.WholeFileReader()
+    filename_t, img_t_raw = reader.read(filename_label_queue)
+    img_t = tf.image.decode_jpeg(img_t_raw, channels=CHANNELS, ratio=DOWNSAMPLE)
+    img_t = tf.cast(img_t, tf.float32)
+    img_t = tf.reshape(img_t, [IMG_HEIGHT, IMG_WIDTH, CHANNELS])
+    img_t = tf.image.per_image_whitening(img_t)
+
+    if label_queue is None:
+        image_batch, filename_batch = tf.train.batch(
+            [img_t, filename_t],
+            batch_size=batch_size,
+            num_threads=1)
+        return image_batch, filename_batch
+    else:
+        label_t = label_queue.dequeue()
+        image_batch, labels_batch, filename_batch = tf.train.batch(
+            [img_t, label_t, filename_t],
+            batch_size=batch_size,
+            num_threads=1)
+        return image_batch, labels_batch, filename_batch
+
 def _variable_on_cpu(name, shape, initializer):
     """Helper to create a Variable stored on CPU memory.
 
